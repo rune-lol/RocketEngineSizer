@@ -45,11 +45,11 @@ print(f"Chamber volume: {round(V_c*1_000_000, 3)}cc, d_c={d_c*1_000}mm, L_c={L_c
 
 ### Injector sizing
 A_hole = ((d_injectorhole / (2*1000))**2)*math.pi
-A_fuel = m_dot/(Cd * math.sqrt(2*rho_fuel*(deltaP*100_000)))
+A_fuel = m_dot_fuel/(Cd * math.sqrt(2*rho_fuel*(deltaP*100_000)))
 
 N_fuel = A_fuel / A_hole
 print("Injector:")
 print(f"Fuel: Area: {round(A_fuel*1_000_000, 3)}mm^2, holes: {N_fuel} of {d_injectorhole}mm")
 
 ### Tank pressure verification
-print(f"P_tank needs to be at least {(P_CHAMBER + deltaP)}bar")
+print(f"P_tank_fuel needs to be at least {(P_CHAMBER + deltaP)}bar")
