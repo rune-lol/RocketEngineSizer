@@ -9,14 +9,18 @@ AeAt = 2.2959 # taken from CEA
 C_star = 1715 # m/s, taken from CEA
 L_star = 1.5 # m, guessed based on data from the internet
 dcdt = 3 # guessed based off of data from the internet
-deltaP = 2.5 # bar, injector deltaP, guessed from data from the internet
+deltaP = 5 # bar, injector deltaP, guessed from data from the internet
 Cd = 0.7 # injector discharge coefficient
 rho_fuel = 789 # kg/m^3
-rho_ox = 0 # kg/m^3
-d_injectorhole = 0.8 # mm
+d_injectorhole_ox = 1 # mm
+d_injectorhole_fuel = 0.8 # mm
+gamma = 1.4
+P_oxygenfeed = 40 # bar, oxidizer feed pressure
+T_oxygenfeed = 294 # K
 
 ### Physical constants
 G = 9.81 # m/s^2
+R_ox = 259 # J/Kg*K
 
 ### Calculate mass flow
 m_dot = F/(Isp*G)
@@ -44,12 +48,27 @@ L_c = V_c/A_c
 print(f"Chamber volume: {round(V_c*1_000_000, 3)}cc, d_c={d_c*1_000}mm, L_c={L_c*1_000}mm")
 
 ### Injector sizing
-A_hole = ((d_injectorhole / (2*1000))**2)*math.pi
+# Fuel
 A_fuel = m_dot_fuel/(Cd * math.sqrt(2*rho_fuel*(deltaP*100_000)))
-
-N_fuel = A_fuel / A_hole
+A_hole_fuel = ((d_injectorhole_fuel / (2*1000))**2)*math.pi
+N_fuel = A_fuel / A_hole_fuel
 print("Injector:")
-print(f"Fuel: Area: {round(A_fuel*1_000_000, 3)}mm^2, holes: {N_fuel} of {d_injectorhole}mm")
+print(f"Fuel: Area: {round(A_fuel*1_000_000, 3)}mm^2, holes: {N_fuel} of {d_injectorhole_fuel}mm")
+
+# Oxidizer
+# - Gaseous
+K = Cd * math.sqrt(gamma/(R_ox*T_oxygenfeed))*((2/(gamma + 1))**((gamma+1)/(2*(gamma-1))))
+A_ox = m_dot_ox/(K*P_oxygenfeed*100_000)
+A_hole_ox = ((d_injectorhole_ox / (2*1000))**2)*math.pi
+N_ox = A_ox / A_hole_ox
+print(f"Oxidiser: Area: {round(A_ox*1_000_000, 3)}mm^2, holes: {N_ox} of {d_injectorhole_ox}mm")
+
+### Jet momentum balancing
+rho_ox = (P_oxygenfeed*100_000)/(R_ox*T_oxygenfeed)
+v_ox = m_dot_ox/(rho_ox*A_ox)
+v_fuel = m_dot_fuel/(rho_fuel*A_fuel)
+J = (m_dot_ox*v_ox)/(m_dot_fuel*v_fuel)
+print(f"J={round(J, 2)}, v_ox={round(v_ox, 2)}m/s, v_fuel={round(v_fuel, 2)}m/s")
 
 ### Tank pressure verification
 print(f"P_tank_fuel needs to be at least {(P_CHAMBER + deltaP)}bar")
